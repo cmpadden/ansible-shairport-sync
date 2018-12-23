@@ -1,0 +1,26 @@
+---
+- name: Update and upgrade `apt` packages
+  become: true
+  apt:
+    upgrade: true
+    update_cache: true
+    cache_valid_time: 86400
+
+- name: Install prerequisite packages for building shairport-sync
+  become: true
+  apt:
+    name:
+      - autoconf
+      - automake
+      - avahi-daemon
+      - build-essential
+      - git
+      - libasound2-dev
+      - libavahi-client-dev
+      - libconfig-dev
+      - libdaemon-dev
+      - libpopt-dev
+      - libssl-dev
+      - libtool
+      - xmltoman
+    state: present

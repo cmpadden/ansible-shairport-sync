@@ -1,0 +1,57 @@
+---
+- include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Create directory for source code
+  file:
+    path: /home/{{ ansible_ssh_user }}/src
+    state: directory
+
+- name: Clone shairport sync pepository
+  git:
+    repo: https://github.com/mikebrady/shairport-sync
+    dest: /home/{{ ansible_ssh_user }}/src/shairport-sync
+    version: master
+
+- name: Install auxiliary files
+  command: /usr/bin/autoreconf -fi
+  args:
+    chdir: /home/{{ ansible_ssh_user }}/src/shairport-sync
+    creates: /home/{{ ansible_ssh_user }}/src/shairport-sync/configure
+
+- name: Produce customised Makefile
+  command: >
+      ./configure --sysconfdir=/etc \
+                  --with-alsa \
+                  --with-avahi \
+                  --with-ssl=openssl \
+                  --with-systemd
+  args:
+    chdir: /home/{{ ansible_ssh_user }}/src/shairport-sync
+    creates: /home/{{ ansible_ssh_user }}/src/shairport-sync/Makefile
+
+- name: Build shairport-sync
+  command: make
+  args:
+    chdir: /home/{{ ansible_ssh_user }}/src/shairport-sync
+    creates: /home/{{ ansible_ssh_user }}/src/shairport-sync/shairport-sync
+
+- name: Copy the program, libraries, and documentation to the correct locations
+  become: true
+  command: make install
+  args:
+    chdir: /home/{{ ansible_ssh_user }}/src/shairport-sync
+    creates: /usr/bin/shairport-sync
+
+- name: Configure shairport-sync using template
+  become: true
+  template:
+    src: shairport-sync.conf.j2
+    dest: /etc/shairport-sync.conf
+    backup: true
+
+- name: enable shairport-sync service
+  become: true
+  systemd:
+    name: shairport-sync
+    enabled: true

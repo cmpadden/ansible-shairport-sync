@@ -1,0 +1,18 @@
+general =
+{
+  // use this advanced setting to set the range, in dB, you want between the
+  // maximum volume and the minimum volume. Range is 30 to 150 dB. Leave it
+  // commented out to use mixer's native range.
+  volume_range_db = 60 ;
+};
+
+alsa =
+{
+  // the name of the alsa output device. Use "alsamixer" or "aplay" to find out
+  // the names of devices, mixers, etc.
+  output_device = "hw:0";
+
+  // the name of the mixer to use to adjust output volume. If not specified,
+  // volume in adjusted in software.
+  mixer_control_name = "PCM";
+};
